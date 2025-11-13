@@ -4,6 +4,7 @@ import asyncio
 from settings import settings
 from app.helper import add_project, get_user_projects
 from app.graph import GraphState, final_graph
+from app.rag import chunk_and_store
 
 API = settings.API_URL
 
@@ -67,9 +68,11 @@ async def main():
                 if personas == "SDE":
                     st.subheader("SDE Report")
                     st.markdown(graph["documentation"])
+                    await chunk_and_store(graph["documentation"])
                 else:
                     st.subheader("PM Report")
                     st.markdown(graph["documentation"])
+                    await chunk_and_store(graph["documentation"])
         if st.button("Logout"):
             st.session_state.user = None
 
