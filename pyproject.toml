@@ -1,0 +1,23 @@
+[project]
+name = "hue25-11-1-sunil-python-genai"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi>=0.121.1",
+    "ipython>=9.7.0",
+    "jwt>=1.4.0",
+    "langchain>=1.0.5",
+    "langchain-openai>=1.0.2",
+    "langgraph>=1.0.3",
+    "passlib>=1.7.4",
+    "pydantic[email]>=2.12.4",
+    "pydantic-settings>=2.12.0",
+    "python-jose>=3.5.0",
+    "sqlmodel>=0.0.27",
+    "typing-extensions>=4.15.0",
+    "uvicorn>=0.38.0",
+    "python-multipart>=0.0.20",
+    "loguru>=0.7.3",
+]
