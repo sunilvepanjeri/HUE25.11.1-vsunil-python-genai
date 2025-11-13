@@ -1,5 +1,6 @@
 import streamlit as st
 import requests
+import re
 import asyncio
 from settings import settings
 from app.helper import add_project, get_user_projects
@@ -9,33 +10,43 @@ from app.rag import chunk_and_store
 API = settings.API_URL
 
 
+def is_valid_email(email):
+    pattern = r'^[\w\.-]+@[\w\.-]+\.\w{2,}$'
+    return re.match(pattern, email) is not None
+
 async def tab_caller():
     page = st.selectbox("Choose Option", ["Login", "Signup"])
 
     if page == "Login":
-        username = st.text_input("Username", key="login_user")
+        Email = st.text_input("Email", key="login_email")
         password = st.text_input("Password", type="password", key="login_pass")
         if st.button("Login"):
-            data = requests.post(f"{API}/auth/login", json={"username": username, "password": password}).json()
-            st.info(data["message"])
-            if data["value"]:
-                st.session_state.login_success = True
-                st.session_state.user = username
+            if is_valid_email(Email):
+                data = requests.post(f"{API}/auth/login", json={"Email": Email, "password": password}).json()
+                st.info(data["message"])
+                if data["value"]:
+                    st.session_state.login_success = True
+                    st.session_state.email = Email
+            else:
+                st.info(f"Invalid Email")
     if page == "Signup":
-        username = st.text_input("New Username", key="signup_user")
+        Email = st.text_input("New Email", key="signup_email")
         password = st.text_input("New Password", type="password", key="signup_pass")
         if st.button("Signup"):
-            data = requests.post(f"{API}/auth/signup", json={"username": username, "password": password}).json()
-            st.info(data["message"])
-            if data["value"]:
-                st.session_state.user = username
+            if is_valid_email(Email):
+                data = requests.post(f"{API}/auth/signup", json={"Email": Email, "password": password}).json()
+                st.info(data["message"])
+                if data["value"]:
+                    st.session_state.email = Email
+            else:
+                st.info(f"Invalid Email")
 
 
 async def main():
     st.set_page_config(page_title="Multi-Agent Code Analysis & Documentation System", layout="wide")
 
-    if "user" not in st.session_state:
-        st.session_state.user = None
+    if "email" not in st.session_state:
+        st.session_state.email = None
     if "login_success" not in st.session_state:
         st.session_state.login_success = None
 
@@ -43,14 +54,14 @@ async def main():
     if st.session_state.login_success is None:
         await tab_caller()
     if st.session_state.login_success:
-        st.sidebar.success(f"Logged in as {st.session_state.user}")
+        st.sidebar.success(f"Logged in as {st.session_state.email}")
         uploaded = st.file_uploader("Upload Project ZIP", type=["zip"])
         if uploaded:
             if st.button("Create Project"):
-                pid, path = await add_project(st.session_state.user, uploaded.name, uploaded.read())
+                pid, path = await add_project(st.session_state.email, uploaded.name, uploaded.read())
                 st.success(f"Project created: {pid}")
 
-        projects = await get_user_projects(st.session_state.user)
+        projects = await get_user_projects(st.session_state.email)
         if projects:
             selected_pid = st.selectbox("Select Project", list(projects.keys()))
             personas = st.selectbox("Select Persona", ["SDE", "PM"])
@@ -74,7 +85,7 @@ async def main():
                     st.markdown(graph["documentation"])
                     await chunk_and_store(graph["documentation"])
         if st.button("Logout"):
-            st.session_state.user = None
+            st.session_state.email = None
 
 
 if __name__ == "__main__":

@@ -6,25 +6,25 @@ from loguru import logger
 router = APIRouter()
 
 class User(BaseModel):
-    username: str
+    Email: str
     password: str
 
 @router.post("/login")
 async def login(user: User):
     users = await load_users()
-    if user.username not in users or users[user.username]["password"] != user.password:
-        logger.error(f"Username {user.username} doesn't exist")
+    if user.Email not in users or users[user.Email]["password"] != user.password:
+        logger.error(f"Username {user.Email} doesn't exist")
         return {"value": False, "message": "Invalid credentials"}
-    logger.debug(f"Username {user.username} logged in")
+    logger.debug(f"Username {user.Email} logged in")
     return {"value": True, "message": "Login successful"}
 
 @router.post("/signup")
 async def signup(user: User):
     users = await load_users()
-    if user.username in users:
-        logger.error(f"Username {user.username} already exists")
+    if user.Email in users:
+        logger.error(f"Username {user.Email} already exists")
         return {"value": False, "message": "User already exists"}
-    users[user.username] = {"password": user.password}
+    users[user.Email] = {"password": user.password}
     await save_users(users)
-    logger.debug(f"Username {user.username} Signed up")
+    logger.debug(f"Username {user.Email} Signed up")
     return {"value": True, "message": "Signup successful Login to Proceed"}
